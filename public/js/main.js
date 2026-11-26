@@ -88,8 +88,45 @@ const hookTrainsCatalog = async () => {
     }
 };
 
+const hookSchedules = () => {
+    const listEl = document.getElementById('schedules-list');
+    const monthSelect = document.getElementById('month-filter');
+    if (!listEl || !monthSelect) {
+        return;
+    }
+
+    const tripId = window.location.pathname.split('/').filter(Boolean).pop();
+    const loadSchedules = async () => {
+        const month = monthSelect.value;
+        const url = `/api/trips/${encodeURIComponent(tripId)}/schedules${month ? `?month=${month}` : ''}`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to load schedules (${response.status})`);
+            }
+            const { schedules } = await response.json();
+            listEl.replaceChildren();
+            schedules.forEach((schedule) => {
+                const card = document.createElement('article');
+                card.className = 'schedule-card';
+                card.innerHTML =
+                    `<strong>${schedule.departureTime} -> ${schedule.arrivalTime}</strong>` +
+                    `<div>${schedule.daysOfWeek.join(', ')}</div>` +
+                    `<a href="/trips/booking/${schedule.id}" class="book-btn">Book Now</a>`;
+                listEl.appendChild(card);
+            });
+        } catch (error) {
+            listEl.textContent = 'Unable to load schedules right now.';
+        }
+    };
+
+    monthSelect.addEventListener('change', loadSchedules);
+    loadSchedules();
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     hookRegionSorter();
     hookSeasonSorter();
     hookTrainsCatalog();
+    hookSchedules();
 });
