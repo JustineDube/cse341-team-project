@@ -88,8 +88,53 @@ const hookTrainsCatalog = async () => {
     }
 };
 
+const hookTripsCatalog = async () => {
+    const listEl = document.getElementById('trips-list');
+    const templateEl = document.getElementById('trip-card-template');
+    if (!listEl || !templateEl) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/trips');
+        if (!response.ok) {
+            throw new Error(`Failed to load trips (${response.status})`);
+        }
+        const { trips } = await response.json();
+        const url = new URL(window.location.href);
+        const region = url.searchParams.get('region');
+        const season = url.searchParams.get('season');
+        const filtered = trips.filter((trip) =>
+            (!region || region === 'all' || trip.region === region) &&
+            (!season || season === 'all' || trip.bestSeason === season)
+        );
+        const fragment = document.createDocumentFragment();
+
+        filtered.forEach((trip) => {
+            const card = templateEl.content.cloneNode(true);
+            card.querySelector('[data-field="name"]').textContent = trip.name;
+            card.querySelector('[data-field="region"]').textContent = trip.region;
+            card.querySelector('[data-field="stations"]').textContent =
+                `${trip.startStation} -> ${trip.endStation}`;
+            card.querySelector('[data-field="duration"]').textContent = `Duration: ${trip.duration}`;
+            card.querySelector('[data-field="distance"]').textContent = `Distance: ${trip.distance} km`;
+            card.querySelector('[data-field="season"]').textContent = `Best in ${trip.bestSeason}`;
+            card.querySelector('[data-field="description"]').textContent = trip.description;
+            card.querySelector('[data-field="highlights"]').textContent =
+                (trip.highlights || []).join(' | ');
+            card.querySelector('[data-field="link"]').href = `/trips/${trip.id}`;
+            fragment.appendChild(card);
+        });
+
+        listEl.replaceChildren(fragment);
+    } catch (error) {
+        listEl.textContent = 'Unable to load trips right now.';
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     hookRegionSorter();
     hookSeasonSorter();
     hookTrainsCatalog();
+    hookTripsCatalog();
 });
