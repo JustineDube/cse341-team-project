@@ -88,8 +88,38 @@ const hookTrainsCatalog = async () => {
     }
 };
 
+const hookBookingsAdmin = async () => {
+    const listEl = document.getElementById('bookings-list');
+    if (!listEl) {
+        return;
+    }
+    const loadingEl = document.getElementById('bookings-loading');
+    const errorEl = document.getElementById('bookings-error');
+    try {
+        const response = await fetch('/api/bookings');
+        if (!response.ok) {
+            throw new Error(`Failed to load bookings (${response.status})`);
+        }
+        const { bookings } = await response.json();
+        listEl.replaceChildren();
+        bookings.forEach((booking) => {
+            const card = document.createElement('article');
+            card.innerHTML =
+                `<h2>${booking.passengerName || 'Booking ' + booking.id}</h2>` +
+                `<p>Email: ${booking.passengerEmail || 'Not provided'}</p>` +
+                `<p>Ticket: ${booking.ticketClass || 'Not specified'}</p>`;
+            listEl.appendChild(card);
+        });
+        if (loadingEl) loadingEl.hidden = true;
+    } catch (error) {
+        if (loadingEl) loadingEl.hidden = true;
+        if (errorEl) errorEl.hidden = false;
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     hookRegionSorter();
     hookSeasonSorter();
     hookTrainsCatalog();
+    hookBookingsAdmin();
 });
