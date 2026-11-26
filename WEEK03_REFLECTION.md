@@ -14,11 +14,17 @@ Video link: [Add the public walkthrough video link here]
 
 3. Provide links to all GitHub Issues you created for your selected feature set.
 
-Issue links: [Add the GitHub Issue link here]
+Issue links:
+- https://github.com/JustineDube/cse341-team-project/issues/2
+- https://github.com/JustineDube/cse341-team-project/issues/3
+- https://github.com/JustineDube/cse341-team-project/issues/4
 
 4. Provide links to all Pull Requests you created for your selected feature set.
 
-Pull request links: https://github.com/JustineDube/cse341-team-project/pull/1
+Pull request links:
+- https://github.com/JustineDube/cse341-team-project/pull/5
+- https://github.com/JustineDube/cse341-team-project/pull/6
+- https://github.com/JustineDube/cse341-team-project/pull/7
 
 ## Implementation Reflection
 
