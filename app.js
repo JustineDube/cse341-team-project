@@ -11,6 +11,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = Path.dirname(__filename);
 
 const app = express();
+const isProduction = process.env.NODE_ENV === 'production';
+const sessionSecret = process.env.SESSION_SECRET;
+
+if (isProduction && !sessionSecret) {
+    throw new Error('SESSION_SECRET is required in production.');
+}
+
+if (isProduction) {
+    app.set('trust proxy', 1);
+}
 
 // Add version info to res.locals for access in templates.
 app.use((req, res, next) => {
@@ -29,11 +39,16 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(globalMiddleware);
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'development-only-session-secret',
+    secret: sessionSecret || 'local-development-session-secret',
     resave: false,
     saveUninitialized: false,
     rolling: true,
-    cookie: { maxAge: 60 * 60 * 1000, httpOnly: true, sameSite: 'lax' }
+    cookie: {
+        maxAge: 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProduction
+    }
 }));
 app.use(loadSessionUser);
 app.use('/', routes);
