@@ -4,6 +4,8 @@ import { Router } from 'express';
 import { homePage, aboutPage, testErrorPage } from './index.js';
 import { registerPage, loginPage, register, login, logout } from '../controllers/auth.js';
 import { requirePageLogin, requirePageRole } from '../middleware/auth.js';
+import { requireApiLogin } from '../middleware/auth.js';
+import { userAdminPage, getUsers, updateUser, deleteUser } from '../controllers/users.js';
 
 const router = Router();
 
@@ -27,6 +29,10 @@ router.get('/dashboard', requirePageLogin, (req, res) => {
 router.get('/admin', requirePageRole('admin'), (req, res) => {
     res.render('admin/dashboard', { title: 'Admin Dashboard' });
 });
+router.get('/admin/users', requirePageLogin, userAdminPage);
+router.get('/api/users', requireApiLogin, getUsers);
+router.put('/api/users/:id', requireApiLogin, updateUser);
+router.delete('/api/users/:id', requireApiLogin, deleteUser);
 
 // Trains API
 router.get('/api/trains', trainsApi);

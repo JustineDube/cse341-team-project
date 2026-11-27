@@ -88,8 +88,94 @@ const hookTrainsCatalog = async () => {
     }
 };
 
+const hookUserAdmin = async () => {
+    const listEl = document.getElementById('user-list');
+    if (!listEl) return;
+    const messageEl = document.getElementById('user-message');
+    const cardTemplate = document.getElementById('user-card-template');
+    const editTemplate = document.getElementById('user-edit-template');
+    let usersById = new Map();
+
+    const renderUsers = () => {
+        const fragment = document.createDocumentFragment();
+        usersById.forEach((user) => {
+            const card = cardTemplate.content.cloneNode(true);
+            const element = card.querySelector('[data-user-id]');
+            element.dataset.userId = user.id;
+            card.querySelector('.user-name').textContent = user.displayName;
+            card.querySelector('.user-username').textContent = `Username: ${user.username}`;
+            card.querySelector('.user-email').textContent = `Email: ${user.email}`;
+            card.querySelector('.user-role').textContent = `Role: ${user.role}`;
+            fragment.append(card);
+        });
+        listEl.replaceChildren(fragment);
+    };
+
+    const loadUsers = async () => {
+        const response = await fetch('/api/users');
+        if (!response.ok) throw new Error('Unable to load users.');
+        const { users } = await response.json();
+        usersById = new Map(users.map((user) => [user.id, user]));
+        renderUsers();
+    };
+
+    listEl.addEventListener('click', async (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const card = button.closest('[data-user-id]');
+        const user = usersById.get(card.dataset.userId);
+        if (button.dataset.action === 'cancel') {
+            renderUsers();
+        } else if (button.dataset.action === 'edit') {
+            const editor = editTemplate.content.cloneNode(true);
+            const form = editor.querySelector('form');
+            form.dataset.userId = user.id;
+            form.elements.displayName.value = user.displayName;
+            form.elements.username.value = user.username;
+            form.elements.email.value = user.email;
+            form.addEventListener('submit', async (submitEvent) => {
+                submitEvent.preventDefault();
+                const body = Object.fromEntries(new FormData(form));
+                const saveResponse = await fetch(`/api/users/${encodeURIComponent(user.id)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!saveResponse.ok) {
+                    messageEl.textContent = 'Unable to update user.';
+                    return;
+                }
+                const payload = await saveResponse.json();
+                usersById.set(payload.user.id, payload.user);
+                renderUsers();
+                messageEl.textContent = 'User updated.';
+            });
+            card.replaceWith(editor);
+        } else if (button.dataset.action === 'delete') {
+            if (!window.confirm(`Delete ${user.displayName}?`)) return;
+            const deleteResponse = await fetch(`/api/users/${encodeURIComponent(user.id)}`, {
+                method: 'DELETE'
+            });
+            if (!deleteResponse.ok) {
+                messageEl.textContent = 'Unable to delete user.';
+                return;
+            }
+            usersById.delete(user.id);
+            renderUsers();
+            messageEl.textContent = 'User deleted.';
+        }
+    });
+
+    try {
+        await loadUsers();
+    } catch (error) {
+        messageEl.textContent = error.message;
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     hookRegionSorter();
     hookSeasonSorter();
     hookTrainsCatalog();
+    hookUserAdmin();
 });
