@@ -4,11 +4,23 @@ import { fileURLToPath } from 'url';
 import pkg from './package.json' with { type: 'json' };
 import globalMiddleware from './src/middleware/global.js';
 import routes from './src/routes/router.js';
+import session from 'express-session';
+import { loadSessionUser } from './src/middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = Path.dirname(__filename);
 
 const app = express();
+const isProduction = process.env.NODE_ENV === 'production';
+const sessionSecret = process.env.SESSION_SECRET;
+
+if (isProduction && !sessionSecret) {
+    throw new Error('SESSION_SECRET is required in production.');
+}
+
+if (isProduction) {
+    app.set('trust proxy', 1);
+}
 
 // Add version info to res.locals for access in templates.
 app.use((req, res, next) => {
@@ -26,6 +38,19 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(globalMiddleware);
+app.use(session({
+    secret: sessionSecret || 'local-development-session-secret',
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    cookie: {
+        maxAge: 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProduction
+    }
+}));
+app.use(loadSessionUser);
 app.use('/', routes);
 
 // Catch requests that did not match a route.

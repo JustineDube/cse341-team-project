@@ -23,6 +23,18 @@ const initializeDatabase = async (db) => {
     await collection.insertMany(documents);
   }
 
+  const roles = db.collection('roles');
+  await roles.updateOne(
+    { name: 'customer' },
+    { $setOnInsert: { name: 'customer' } },
+    { upsert: true }
+  );
+  await roles.updateOne(
+    { name: 'admin' },
+    { $setOnInsert: { name: 'admin' } },
+    { upsert: true }
+  );
+
   const confirmations = db.collection('confirmations');
   await confirmations.deleteMany({});
   await confirmations.createIndex({ id: 1 }, { unique: true });
