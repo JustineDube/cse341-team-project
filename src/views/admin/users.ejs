@@ -1,0 +1,24 @@
+<%- include('../../partials/header') %>
+<h1>User Administration</h1>
+<p id="user-message"></p>
+<div id="user-list"></div>
+<template id="user-card-template">
+    <article class="user-card" data-user-id="">
+        <h2 class="user-name"></h2>
+        <p class="user-username"></p>
+        <p class="user-email"></p>
+        <p class="user-role"></p>
+        <button type="button" data-action="edit">Edit</button>
+        <button type="button" data-action="delete">Delete</button>
+    </article>
+</template>
+<template id="user-edit-template">
+    <form class="user-edit-form" data-user-id="">
+        <label>Display Name <input name="displayName" required></label>
+        <label>Username <input name="username" required></label>
+        <label>Email <input type="email" name="email" required></label>
+        <button type="submit">Save</button>
+        <button type="button" data-action="cancel">Cancel</button>
+    </form>
+</template>
+<%- include('../../partials/footer') %>
