@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 import pkg from './package.json' with { type: 'json' };
 import globalMiddleware from './src/middleware/global.js';
 import routes from './src/routes/router.js';
+import session from 'express-session';
+import { loadSessionUser } from './src/middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = Path.dirname(__filename);
@@ -26,6 +28,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(globalMiddleware);
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'development-only-session-secret',
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    cookie: { maxAge: 60 * 60 * 1000, httpOnly: true, sameSite: 'lax' }
+}));
+app.use(loadSessionUser);
 app.use('/', routes);
 
 // Catch requests that did not match a route.

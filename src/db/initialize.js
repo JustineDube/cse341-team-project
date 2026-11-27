@@ -23,6 +23,10 @@ const initializeDatabase = async (db) => {
     await collection.insertMany(documents);
   }
 
+  const roles = db.collection('roles');
+  await roles.deleteMany({});
+  await roles.insertMany([{ name: 'customer' }, { name: 'admin' }]);
+
   const confirmations = db.collection('confirmations');
   await confirmations.deleteMany({});
   await confirmations.createIndex({ id: 1 }, { unique: true });

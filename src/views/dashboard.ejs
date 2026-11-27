@@ -1,0 +1,9 @@
+<%- include('./partials/header') %>
+<h1>Welcome, <%= user.displayName %></h1>
+<p>Your booking dashboard.</p>
+<div id="my-bookings">Loading your bookings...</div>
+<nav>
+    <a href="/bookings-admin">Booking Admin</a>
+    <a href="/admin/users">User Admin</a>
+</nav>
+<%- include('./partials/footer') %>

@@ -1,0 +1,9 @@
+<%- include('../partials/header') %>
+<h1>Login</h1>
+<% if (error) { %><p role="alert"><%= error %></p><% } %>
+<form method="POST" action="/login">
+    <label>Username or Email <input name="identifier" required></label>
+    <label>Password <input type="password" name="password" required></label>
+    <button type="submit">Login</button>
+</form>
+<%- include('../partials/footer') %>
