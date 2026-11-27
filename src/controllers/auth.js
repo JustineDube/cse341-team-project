@@ -63,22 +63,31 @@ export const login = async (req, res) => {
         error: 'Invalid username/email or password.'
       });
     }
-    req.session.user = {
-      id: user._id.toString(),
-      displayName: user.displayName,
-      username: user.username,
-      email: user.email,
-      role: user.role.name
-    };
-    return req.session.save((error) => {
-      if (error) {
-        console.error('Session save error:', error);
+    return req.session.regenerate((regenerateError) => {
+      if (regenerateError) {
+        console.error('Session regeneration error:', regenerateError);
         return res.status(500).render('auth/login', {
           title: 'Login',
           error: 'Unable to create a login session.'
         });
       }
-      return res.redirect(user.role.name === 'admin' ? '/admin' : '/dashboard');
+      req.session.user = {
+        id: user._id.toString(),
+        displayName: user.displayName,
+        username: user.username,
+        email: user.email,
+        role: user.role.name
+      };
+      return req.session.save((saveError) => {
+        if (saveError) {
+          console.error('Session save error:', saveError);
+          return res.status(500).render('auth/login', {
+            title: 'Login',
+            error: 'Unable to create a login session.'
+          });
+        }
+        return res.redirect(user.role.name === 'admin' ? '/admin' : '/dashboard');
+      });
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -89,10 +98,10 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = (req, res) => {
+export const logout = (req, res, next) => {
   req.session.destroy((error) => {
     if (error) {
-      console.error('Logout error:', error);
+      return next(error);
     }
     res.clearCookie('connect.sid');
     return res.redirect('/');
