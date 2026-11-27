@@ -24,8 +24,16 @@ const initializeDatabase = async (db) => {
   }
 
   const roles = db.collection('roles');
-  await roles.deleteMany({});
-  await roles.insertMany([{ name: 'customer' }, { name: 'admin' }]);
+  await roles.updateOne(
+    { name: 'customer' },
+    { $setOnInsert: { name: 'customer' } },
+    { upsert: true }
+  );
+  await roles.updateOne(
+    { name: 'admin' },
+    { $setOnInsert: { name: 'admin' } },
+    { upsert: true }
+  );
 
   const confirmations = db.collection('confirmations');
   await confirmations.deleteMany({});
