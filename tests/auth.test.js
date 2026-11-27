@@ -42,4 +42,44 @@ describe('Core authentication', () => {
     expect(dashboard.status).toBe(200);
     expect(dashboard.text).toContain('Test Customer');
   });
+
+  test('signed-in customer is forbidden from the admin dashboard', async () => {
+    const agent = request.agent(app);
+    await agent.post('/register').type('form').send({
+      displayName: 'Regular Customer',
+      username: 'regularcustomer',
+      email: 'regular@example.com',
+      password: 'password123',
+      confirmPassword: 'password123'
+    });
+    await agent.post('/login').type('form').send({
+      identifier: 'regular@example.com',
+      password: 'password123'
+    });
+
+    const response = await agent.get('/admin');
+    expect(response.status).toBe(403);
+    expect(response.text).toContain('Forbidden');
+  });
+
+  test('logout destroys the session', async () => {
+    const agent = request.agent(app);
+    await agent.post('/register').type('form').send({
+      displayName: 'Logout Customer',
+      username: 'logoutcustomer',
+      email: 'logout@example.com',
+      password: 'password123',
+      confirmPassword: 'password123'
+    });
+    await agent.post('/login').type('form').send({
+      identifier: 'logout@example.com',
+      password: 'password123'
+    });
+    const logout = await agent.post('/logout');
+    expect(logout.status).toBe(302);
+
+    const dashboard = await agent.get('/dashboard');
+    expect(dashboard.status).toBe(302);
+    expect(dashboard.headers.location).toBe('/login');
+  });
 });
