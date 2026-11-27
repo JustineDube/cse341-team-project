@@ -1,0 +1,25 @@
+<%- include('../../partials/header') %>
+<h1>Trip Administration</h1>
+<p id="trip-message"></p>
+<div id="trip-list"></div>
+<template id="trip-card-template">
+    <article class="trip-card" data-trip-id="">
+        <h2 class="trip-name"></h2>
+        <p class="trip-region"></p>
+        <p class="trip-distance"></p>
+        <button type="button" data-action="edit">Edit</button>
+        <button type="button" data-action="delete">Delete</button>
+    </article>
+</template>
+<template id="trip-edit-template">
+    <form class="trip-edit-form" data-trip-id="">
+        <label>Name <input name="name" required></label>
+        <label>Region <input name="region" required></label>
+        <label>Start Station <select name="startStation"></select></label>
+        <label>End Station <select name="endStation"></select></label>
+        <label>Distance <input name="distance" type="number" min="0" required></label>
+        <button type="submit">Save</button>
+        <button type="button" data-action="cancel">Cancel</button>
+    </form>
+</template>
+<%- include('../../partials/footer') %>
