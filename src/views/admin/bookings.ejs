@@ -1,0 +1,14 @@
+<%- include('../../partials/header') %>
+<h1>Booking Administration</h1>
+<p id="booking-message"></p>
+<div id="booking-list"></div>
+<template id="booking-card-template">
+    <article class="booking-card" data-booking-id="">
+        <h2 class="booking-id"></h2>
+        <p class="booking-email"></p>
+        <p class="booking-status"></p>
+        <button type="button" data-action="edit-status">Edit Status</button>
+        <button type="button" data-action="delete">Delete</button>
+    </article>
+</template>
+<%- include('../../partials/footer') %>
