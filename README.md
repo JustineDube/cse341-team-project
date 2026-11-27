@@ -59,7 +59,7 @@ This repository is set up as a **GitHub template**. Use the template feature to 
    cd YOUR-REPO-NAME
    ```
 5. Install dependencies: `npm install`
-6. Copy `.env.example` to `.env` and set `MONGODB_URI` (and optionally `MONGODB_DB_NAME`) for your MongoDB instance.
+6. Copy `.env.example` to `.env` and set `MONGODB_URI` (and optionally `MONGODB_DB_NAME`) for your MongoDB instance. Set `SESSION_SECRET` to a long, random value; generate one with `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`. Configure a separate secret in your deployment environment. Production startup requires `SESSION_SECRET` and uses secure session cookies.
 7. Import the starter data with `npm run db:import`. This replaces the starter collections and clears any confirmations in that database.
 8. Run the automated tests with `npm test`. Tests use a temporary local database and do not change the database in your `.env` file.
 9. Start the development server: `npm run dev`
