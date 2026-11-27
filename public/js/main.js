@@ -88,8 +88,36 @@ const hookTrainsCatalog = async () => {
     }
 };
 
+const hookMyBookings = async () => {
+    const listEl = document.getElementById('my-bookings');
+    if (!listEl) return;
+    try {
+        const response = await fetch('/api/bookings/me');
+        if (!response.ok) throw new Error('Unable to load your bookings.');
+        const { bookings } = await response.json();
+        if (!bookings.length) {
+            listEl.textContent = 'You have no bookings.';
+            return;
+        }
+        const fragment = document.createDocumentFragment();
+        bookings.forEach((booking) => {
+            const item = document.createElement('article');
+            const heading = document.createElement('h2');
+            heading.textContent = `Booking ${booking.id}`;
+            const status = document.createElement('p');
+            status.textContent = `Status: ${booking.status || 'confirmed'}`;
+            item.append(heading, status);
+            fragment.append(item);
+        });
+        listEl.replaceChildren(fragment);
+    } catch (error) {
+        listEl.textContent = error.message;
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     hookRegionSorter();
     hookSeasonSorter();
     hookTrainsCatalog();
+    hookMyBookings();
 });
