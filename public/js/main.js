@@ -88,8 +88,67 @@ const hookTrainsCatalog = async () => {
     }
 };
 
+const hookBookingAdmin = async () => {
+    const listEl = document.getElementById('booking-list');
+    if (!listEl) return;
+    const messageEl = document.getElementById('booking-message');
+    const template = document.getElementById('booking-card-template');
+    try {
+        const response = await fetch('/api/admin/bookings');
+        if (!response.ok) throw new Error('Unable to load bookings.');
+        const { bookings } = await response.json();
+        const fragment = document.createDocumentFragment();
+        bookings.forEach((booking) => {
+            const card = template.content.cloneNode(true);
+            const element = card.querySelector('[data-booking-id]');
+            element.dataset.bookingId = booking.id;
+            card.querySelector('.booking-id').textContent = `Booking ${booking.id}`;
+            card.querySelector('.booking-email').textContent =
+                `Passenger: ${booking.passengerEmail || booking.passengers?.[0]?.email || 'Not provided'}`;
+            card.querySelector('.booking-status').textContent = `Status: ${booking.status || 'confirmed'}`;
+            fragment.append(card);
+        });
+        listEl.replaceChildren(fragment);
+
+        listEl.onclick = async (event) => {
+            const button = event.target.closest('button[data-action]');
+            if (!button) return;
+            const card = button.closest('[data-booking-id]');
+            const id = card.dataset.bookingId;
+            if (button.dataset.action === 'delete') {
+                if (!window.confirm(`Delete booking ${id}?`)) return;
+                const result = await fetch(`/api/bookings/${encodeURIComponent(id)}`, { method: 'DELETE' });
+                if (!result.ok) {
+                    messageEl.textContent = 'Unable to delete booking.';
+                    return;
+                }
+                card.remove();
+                messageEl.textContent = 'Booking deleted.';
+            } else if (button.dataset.action === 'edit-status') {
+                const status = window.prompt('Status (confirmed or cancelled):', 'confirmed');
+                if (!status) return;
+                const result = await fetch(`/api/bookings/${encodeURIComponent(id)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (!result.ok) {
+                    messageEl.textContent = 'Unable to update booking.';
+                    return;
+                }
+                const payload = await result.json();
+                card.querySelector('.booking-status').textContent = `Status: ${payload.booking.status}`;
+                messageEl.textContent = 'Booking updated.';
+            }
+        };
+    } catch (error) {
+        messageEl.textContent = error.message;
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     hookRegionSorter();
     hookSeasonSorter();
     hookTrainsCatalog();
+    hookBookingAdmin();
 });
